@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Carrier VAT Checker</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background: #f0f2f5;
+    color: #1a1a1a;
+    min-height: 100vh;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 2.5rem 1rem;
+  }
+
+  .container { width: 100%; max-width: 600px; }
+
+  .header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 1.75rem;
+  }
+
+  .header-icon {
+    width: 46px; height: 46px;
+    background: #0078d4;
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .header-icon svg {
+    width: 24px; height: 24px;
+    fill: none; stroke: #fff;
+    stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
+  }
+
+  .header-text h1 { font-size: 20px; font-weight: 700; color: #1a1a1a; }
+  .header-text p  { font-size: 13px; color: #666; margin-top: 3px; }
+
+  .card {
+    background: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+  }
+
+  .section-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: #888;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 8px;
+  }
+
+  .input-row { display: flex; gap: 10px; }
+
+  input[type="text"] {
+    flex: 1;
+    font-size: 15px;
+    padding: 10px 14px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    background: #fafafa;
+    color: #1a1a1a;
+    outline: none;
+    transition: border-color 0.15s, box-shadow 0.15s;
+  }
+
+  input[type="text"]:focus {
+    border-color: #0078d4;
+    box-shadow: 0 0 0 3px rgba(0,120,212,0.12);
+    background: #fff;
+  }
+
+  input[type="text"]:disabled {
+    background: #f5f5f5;
+    color: #aaa;
+    cursor: not-allowed;
+    border-color: #e0e0e0;
+  }
+
+  input[type="text"]::placeholder { color: #bbb; }
+
+  .btn {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 8px;
+    font-family: 'Segoe UI', Arial, sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s, opacity 0.15s;
+    white-space: nowrap;
+  }
+
+  .btn-primary { background: #0078d4; color: #fff; }
+  .btn-primary:hover:not(:disabled) { background: #006bbf; }
+  .btn-primary:disabled { background: #ccc; cursor: not-allowed; }
+  .btn:active:not(:disabled) { transform: scale(0.98); }
+
+  .hint { font-size: 12px; color: #999; margin-top: 7px; }
+  .hint a { color: #0078d4; }
+
+  .feedback {
+    font-size: 13px;
+    margin-top: 10px;
+    padding: 9px 13px;
+    border-radius: 7px;
+    display: none;
+  }
+
+  .feedback.visible { display: block; }
+  .feedback.error   { background: #fdecea; color: #b71c1c; }
+  .feedback.success { background: #e6f4ea; color: #1e7e34; }
+  .feedback.loading { background: #e3f2fd; color: #0d47a1; }
+
+  .divider { border: none; border-top: 1px solid #f0f0f0; margin: 1.25rem 0; }
+
+  .vat-section { display: none; }
+  .vat-section.visible { display: block; }
+
+  .result-card { display: none; }
+  .result-card.visible { display: block; }
+
+  .result-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 14px;
+  }
+
+  .carrier-name { font-size: 18px; font-weight: 700; color: #1a1a1a; line-height: 1.3; }
+  .vat-display  { font-family: 'Courier New', monospace; font-size: 12px; color: #999; margin-top: 4px; }
+
+  .pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 13px;
+    border-radius: 99px;
+    font-size: 12px;
+    font-weight: 700;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  .dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+
+  .s-approved              { background: #e6f4ea; color: #1e7e34; }
+  .s-approved              .dot { background: #28a745; }
+  .s-suspended             { background: #fdecea; color: #b71c1c; }
+  .s-suspended             .dot { background: #e53935; }
+  .s-pending-documentation { background: #fff8e1; color: #7b5800; }
+  .s-pending-documentation .dot { background: #ffc107; }
+  .s-not-found             { background: #f5f5f5; color: #555; }
+  .s-not-found             .dot { background: #aaa; }
+
+  .result-msg { font-size: 14px; color: #444; line-height: 1.65; }
+  .result-msg strong { color: #1a1a1a; font-weight: 600; }
+
+  .action-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 12px;
+    padding: 7px 14px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #0078d4;
+    border: 1px solid #0078d4;
+    border-radius: 7px;
+    text-decoration: none;
+    transition: background 0.1s;
+  }
+
+  .action-link:hover { background: #e3f2fd; }
+
+  .new-search-btn {
+    margin-top: 14px;
+    background: none;
+    border: 1px solid #ddd;
+    color: #555;
+    font-size: 13px;
+    padding: 7px 16px;
+    border-radius: 7px;
+    cursor: pointer;
+    font-family: 'Segoe UI', Arial, sans-serif;
+    transition: background 0.1s;
+    display: block;
+  }
+
+  .new-search-btn:hover { background: #f5f5f5; }
+
+  .footer {
+    font-size: 11px;
+    color: #bbb;
+    text-align: center;
+    margin-top: 1.5rem;
+    line-height: 1.8;
+  }
+
+  .footer a { color: #0078d4; text-decoration: none; }
+
+  .spinner {
+    display: inline-block;
+    width: 13px; height: 13px;
+    border: 2px solid rgba(13,71,161,0.3);
+    border-top-color: #0d47a1;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    vertical-align: middle;
+    margin-right: 6px;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <div class="header">
+    <div class="header-icon">
+      <svg viewBox="0 0 24 24"><path d="M9 12l2 2 4-4M21 12c0 4.97-4.03 9-9 9s-9-4.03-9-9 4.03-9 9-9 9 4.03 9 9z"/></svg>
+    </div>
+    <div class="header-text">
+      <h1>Carrier VAT Checker</h1>
+      <p>Verify the approval status of a carrier by VAT number</p>
+    </div>
+  </div>
+
+  <!-- Step 1: Access Code -->
+  <div class="card">
+    <div class="section-label">Step 1 — Enter your access code</div>
+    <div class="input-row">
+      <input type="text" id="codeInput" placeholder="e.g. SUPP-001" autocomplete="off" spellcheck="false" />
+      <button class="btn btn-primary" id="codeBtn" onclick="validateCode()">Verify</button>
+    </div>
+    <div class="hint">If you don't have an access code, you need to request one by fill out this online <a href="https://forms.office.com/e/WRBMMKnW4v">request form</a>.</div>
+    <div class="feedback" id="codeFeedback"></div>
+  </div>
+
+  <!-- Step 2: VAT Lookup -->
+  <div class="card vat-section" id="vatSection">
+    <div class="section-label">Step 2 — Enter carrier VAT number</div>
+    <div class="input-row">
+      <input type="text" id="vatInput" placeholder="e.g. DE123456789" autocomplete="off" spellcheck="false" />
+      <button class="btn btn-primary" id="vatBtn" onclick="lookupVAT()">Check</button>
+    </div>
+    <div class="hint">Include the country code prefix (e.g. DE, NL, FR, GB, IT). Make sure there are NO SPACES, only two letters and the numbers</div>
+    <div class="feedback" id="vatFeedback"></div>
+
+    <div class="result-card" id="resultCard">
+      <hr class="divider">
+      <div class="result-header">
+        <div>
+          <div class="carrier-name" id="rName"></div>
+          <div class="vat-display"  id="rVat"></div>
+        </div>
+        <div class="pill" id="rPill">
+          <span class="dot"></span>
+          <span id="rPillText"></span>
+        </div>
+      </div>
+      <div class="result-msg" id="rMsg"></div>
+      <div id="rAction"></div>
+      <button class="new-search-btn" onclick="newSearch()">Search another VAT number</button>
+    </div>
+  </div>
+
+  <div class="footer">
+    For carrier registration enquiries contact <a href="mailto:scsecurity@ferrero.com">scsecurity@ferrero.com</a><br>
+    All consultations are logged for audit purposes.
+  </div>
+
+</div>
+<script>
+  // ================================================================
+  // CONFIGURATION — edit these values as needed
+  // ================================================================
+
+  // Your Google Apps Script URL — do not change this
+  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzhWHcJwluWSpCcH3chmM36tVNlYnHwDPDY1eh2uwBSz3FfSYziIg6GUtzgB5Wdm34G/exec";
+
+  // Link shown when a carrier is not found — change to your form/email
+  const NEW_CARRIER_URL = "https://forms.office.com/e/YMprcp7VK0";
+
+  // ================================================================
+  // STATUS DEFINITIONS
+  // These three match exactly what is written in your Google Sheet.
+  // Comparison is case-insensitive so "Approved" = "approved".
+  // To edit a message, change the text inside the msg: "..." string.
+  // Do not change the keys (approved / suspended / pending documentation)
+  // unless you also change them in your Google Sheet.
+  // ================================================================
+  const STATUS = {
+
+    "approved": {
+      cls:   "s-approved",
+      label: "Approved",
+      msg:   "This carrier is <strong>approved</strong> and authorised to transport our products. No further action is required."
+    },
+
+    "suspended": {
+      cls:   "s-suspended",
+      label: "Suspended",
+      msg:   "This carrier is currenlty <strong>suspended</strong> and <strong>NOT AUTHORISED</strong> to transport our products."
+    },
+
+    "pending documentation": {
+      cls:   "s-pending-documentation",
+      label: "Not Approved - Pending",
+      msg:   "This carrier process is awaiting <strong>required documentation</strong> before approval can be granted. Carrier will be removed and process will be cancelled if required valid documents are not sent within 5 business days."
+    }
+
+  };
+
+  // ================================================================
+  // NOT FOUND — shown automatically when VAT is not in the list at all
+  // This is not a status in your sheet — it is triggered automatically
+  // ================================================================
+  const NOT_FOUND = {
+    cls:   "s-not-found",
+    label: "Not found",
+    msg:   "This VAT number is <strong>not registered</strong> in our carrier list. Please use the link below if you would like to request registration for this company."
+  };
+
+  // ================================================================
+  // TOOL LOGIC — no need to edit below this line
+  // ================================================================
+
+  let validatedCode = null;
+
+  function normalise(str) {
+    return (str || "").trim().toLowerCase();
+  }
+
+  function getStatus(rawStatus, carrierFound) {
+    if (!carrierFound) return NOT_FOUND;
+    const key = normalise(rawStatus);
+    for (const [k, v] of Object.entries(STATUS)) {
+      if (normalise(k) === key) return v;
+    }
+    // Status value in sheet doesn't match any known status
+    return {
+      cls:   "s-not-found",
+      label: "Status unknown",
+      msg:   "The status for this carrier could not be determined. Please contact the Security team for more information."
+    };
+  }
+
+  async function validateCode() {
+    const code = document.getElementById('codeInput').value.trim();
+    if (!code) return;
+    const btn = document.getElementById('codeBtn');
+    const fb  = document.getElementById('codeFeedback');
+    btn.disabled = true;
+    showFb(fb, 'loading', '<span class="spinner"></span>Verifying your code...');
+    try {
+      const res  = await fetch(`${SCRIPT_URL}?action=validateCode&code=${encodeURIComponent(code)}`);
+      const data = await res.json();
+      if (data.success) {
+        validatedCode = code;
+        showFb(fb, 'success', `Code accepted. Welcome, ${data.company}.`);
+        document.getElementById('codeInput').disabled = true;
+        btn.disabled    = true;
+        btn.textContent = '✓ Verified';
+        document.getElementById('vatSection').classList.add('visible');
+        document.getElementById('vatInput').focus();
+      } else {
+        showFb(fb, 'error', 'Invalid access code. Please check and try again, or fill out this <a href="https://forms.office.com/e/WRBMMKnW4v" style="color:#b71c1c;">online form</a> to request a code.');
+        btn.disabled = false;
+      }
+    } catch (e) {
+      showFb(fb, 'error', 'Connection error. Please try again in a moment.');
+      btn.disabled = false;
+    }
+  }
+
+  async function lookupVAT() {
+    const vat = document.getElementById('vatInput').value.trim();
+    if (!vat || !validatedCode) return;
+    const btn = document.getElementById('vatBtn');
+    const fb  = document.getElementById('vatFeedback');
+    btn.disabled = true;
+    document.getElementById('resultCard').classList.remove('visible');
+    showFb(fb, 'loading', '<span class="spinner"></span>Looking up VAT number...');
+    try {
+      const res  = await fetch(`${SCRIPT_URL}?action=lookupVAT&vat=${encodeURIComponent(vat)}&code=${encodeURIComponent(validatedCode)}`);
+      const data = await res.json();
+      if (data.success) {
+        hideFb(fb);
+        showResult(vat, data.carrierName, data.status);
+      } else {
+        showFb(fb, 'error', 'Lookup failed. Please try again.');
+      }
+    } catch (e) {
+      showFb(fb, 'error', 'Connection error. Please try again in a moment.');
+    }
+    btn.disabled = false;
+  }
+
+  function showResult(vat, carrierName, rawStatus) {
+    const carrierFound = !!carrierName;
+    const cfg = getStatus(rawStatus, carrierFound);
+    const showRegLink = !carrierFound;
+
+    document.getElementById('rName').textContent    = carrierFound ? carrierName : "Carrier not registered";
+    document.getElementById('rVat').textContent     = vat.toUpperCase();
+    const pill = document.getElementById('rPill');
+    pill.className = 'pill ' + cfg.cls;
+    document.getElementById('rPillText').textContent = cfg.label;
+    document.getElementById('rMsg').innerHTML        = cfg.msg;
+    document.getElementById('rAction').innerHTML     = showRegLink
+      ? `<a class="action-link" href="${NEW_CARRIER_URL}">Request carrier registration</a>` : '';
+    document.getElementById('resultCard').classList.add('visible');
+  }
+
+  function newSearch() {
+    document.getElementById('vatInput').value = '';
+    document.getElementById('resultCard').classList.remove('visible');
+    hideFb(document.getElementById('vatFeedback'));
+    document.getElementById('vatInput').focus();
+  }
+
+  function showFb(el, type, html) { el.className = `feedback ${type} visible`; el.innerHTML = html; }
+  function hideFb(el)             { el.className = 'feedback'; el.innerHTML = ''; }
+
+  document.addEventListener('keydown', e => {
+    if (e.key !== 'Enter') return;
+    if (!validatedCode) validateCode(); else lookupVAT();
+  });
+</script>
+</body>
+</html>
