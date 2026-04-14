@@ -370,7 +370,7 @@
       const data = await res.json();
       if (data.success) {
         validatedCode = code;
-        showFb(fb, 'success', `Code accepted. Welcome, ${data.company}.`);
+        showFb(fb, 'success', `Code accepted!`);
         document.getElementById('codeInput').disabled = true;
         btn.disabled    = true;
         btn.textContent = '✓ Verified';
