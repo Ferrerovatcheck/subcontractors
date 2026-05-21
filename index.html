@@ -162,8 +162,8 @@
   .s-suspended             .dot { background: #e53935; }
   .s-pending-documentation { background: #fff8e1; color: #7b5800; }
   .s-pending-documentation .dot { background: #ffc107; }
-  .s-not-found             { background: #ffff99; color: #ff9900; }
-  .s-not-found             .dot { background: #ff9900; }
+  .s-not-found             { background: #fdecea; color: #b71c1c; }
+  .s-not-found             .dot { background: #e53935; }
 
   .result-msg { font-size: 14px; color: #444; line-height: 1.65; }
   .result-msg strong { color: #1a1a1a; font-weight: 600; }
@@ -354,9 +354,9 @@
     }
     // Status value in sheet doesn't match any known status
     return {
-      cls:   "s-not-found",
-      label: "Status unknown",
-      msg:   "The status for this carrier could not be determined. Please contact Ferrero Security team for more information."
+      cls:   "s-error",
+      label: "ERROR",
+      msg:   "There is an error with this carrier's record. Please contact Ferrero Security team for more information."
     };
   }
 
