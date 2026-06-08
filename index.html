@@ -260,7 +260,7 @@
       <input type="text" id="vatInput" placeholder="e.g. DE123456789" autocomplete="off" spellcheck="false" />
       <button class="btn btn-primary" id="vatBtn" onclick="lookupVAT()">Check</button>
     </div>
-    <div class="hint">Include the country code prefix (e.g. DE, NL, FR, GB, IT). Make sure there are NO SPACES, only country code and the numbers</div>
+    <div class="hint">Include the country code prefix (e.g. DE, NL, FR, GB, IT). Make sure there are NO SPACES, only country code and the numbers (e.g. DE1234567). </div>
     <div class="feedback" id="vatFeedback"></div>
 
     <div class="result-card" id="resultCard">
@@ -311,7 +311,8 @@
     "approved": {
       cls:   "s-approved",
       label: "Approved",
-      msg:   "This carrier is <strong>approved</strong> and authorised to transport our products. No further action is required."
+      msg:   "This carrier is <strong>approved</strong> and authorised to transport our products. No further action is required.</p>
+              <p> Ensure the driver provides correct documentation in name of this company upon arriving for loading. </p>"
     },
 
     "suspended": {
