@@ -20,6 +20,28 @@
 
   .container { width: 100%; max-width: 600px; }
 
+  /* ── Language selector ── */
+  .lang-bar {
+    display: flex;
+    justify-content: flex-end;
+    gap: 6px;
+    margin-bottom: 1.25rem;
+  }
+
+  .lang-btn {
+    background: #fff;
+    border: 1.5px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 5px 10px;
+    font-size: 18px;
+    cursor: pointer;
+    line-height: 1;
+    transition: border-color 0.15s, box-shadow 0.15s;
+  }
+
+  .lang-btn:hover  { border-color: #0078d4; }
+  .lang-btn.active { border-color: #0078d4; box-shadow: 0 0 0 3px rgba(0,120,212,0.15); }
+
   .header {
     display: flex;
     align-items: center;
@@ -41,8 +63,9 @@
     stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
   }
 
-  .header-text h1 { font-size: 20px; font-weight: 700; color: #1a1a1a; }
-  .header-text p  { font-size: 13px; color: #666; margin-top: 3px; }
+  .header-text h1   { font-size: 20px; font-weight: 700; color: #1a1a1a; }
+  .header-text p    { font-size: 13px; color: #666; margin-top: 3px; }
+  .header-text .warning { font-size: 12px; color: #1a1a1a; margin-top: 4px; font-weight: 600; }
 
   .card {
     background: #fff;
@@ -230,37 +253,47 @@
 <body>
 <div class="container">
 
+  <!-- Language selector -->
+  <div class="lang-bar">
+    <button class="lang-btn" onclick="setLang('en')" id="lang-en" title="English">🇬🇧</button>
+    <button class="lang-btn" onclick="setLang('it')" id="lang-it" title="Italiano">🇮🇹</button>
+    <button class="lang-btn" onclick="setLang('de')" id="lang-de" title="Deutsch">🇩🇪</button>
+    <button class="lang-btn" onclick="setLang('fr')" id="lang-fr" title="Français">🇫🇷</button>
+    <button class="lang-btn" onclick="setLang('pl')" id="lang-pl" title="Polski">🇵🇱</button>
+  </div>
+
+  <!-- Header -->
   <div class="header">
     <div class="header-icon">
       <svg viewBox="0 0 24 24"><path d="M9 12l2 2 4-4M21 12c0 4.97-4.03 9-9 9s-9-4.03-9-9 4.03-9 9-9 9 4.03 9 9z"/></svg>
     </div>
     <div class="header-text">
-      <h1>Carrier VAT Checker</h1>
-      <p>Verify the approval status of a carrier by VAT number.</p>
-      <p>PLEASE DO NOT SHARE THIS TOOL OUTSIDE YOUR ORGANISATION.</p>
-     <p>Only Ferrero approved users are allowed to use this tool.</p>
+      <h1 id="ui-title"></h1>
+      <p  id="ui-subtitle"></p>
+      <p  class="warning" id="ui-warning1"></p>
+      <p  class="warning" id="ui-warning2"></p>
     </div>
   </div>
 
   <!-- Step 1: Access Code -->
   <div class="card">
-    <div class="section-label">Step 1 — Enter your access code</div>
+    <div class="section-label" id="ui-step1label"></div>
     <div class="input-row">
-      <input type="text" id="codeInput" placeholder="e.g. SUPP-001" autocomplete="off" spellcheck="false" />
-      <button class="btn btn-primary" id="codeBtn" onclick="validateCode()">Verify</button>
+      <input type="text" id="codeInput" autocomplete="off" spellcheck="false" />
+      <button class="btn btn-primary" id="codeBtn" onclick="validateCode()"></button>
     </div>
-    <div class="hint">If you don't have an access code, you need to request one by filling out this online <a href="https://forms.office.com/e/WRBMMKnW4v">request form</a>.</div>
+    <div class="hint" id="ui-codehint"></div>
     <div class="feedback" id="codeFeedback"></div>
   </div>
 
   <!-- Step 2: VAT Lookup -->
   <div class="card vat-section" id="vatSection">
-    <div class="section-label">Step 2 — Enter carrier VAT number</div>
+    <div class="section-label" id="ui-step2label"></div>
     <div class="input-row">
-      <input type="text" id="vatInput" placeholder="e.g. DE123456789" autocomplete="off" spellcheck="false" />
-      <button class="btn btn-primary" id="vatBtn" onclick="lookupVAT()">Check</button>
+      <input type="text" id="vatInput" autocomplete="off" spellcheck="false" />
+      <button class="btn btn-primary" id="vatBtn" onclick="lookupVAT()"></button>
     </div>
-    <div class="hint">Include the country code prefix (e.g. DE, NL, FR, GB, IT). Make sure there are NO SPACES, only country code and the numbers (e.g. DE1234567). </div>
+    <div class="hint" id="ui-vathint"></div>
     <div class="feedback" id="vatFeedback"></div>
 
     <div class="result-card" id="resultCard">
@@ -277,89 +310,269 @@
       </div>
       <div class="result-msg" id="rMsg"></div>
       <div id="rAction"></div>
-      <button class="new-search-btn" onclick="newSearch()">Search another VAT number</button>
+      <button class="new-search-btn" id="ui-newsearch" onclick="newSearch()"></button>
     </div>
   </div>
 
-  <div class="footer">
-    For carrier registration enquiries contact <a href="mailto:scsecurity@ferrero.com">scsecurity@ferrero.com</a><br>
-    All consultations are logged for audit purposes.
-  </div>
+  <div class="footer" id="ui-footer"></div>
 
 </div>
 <script>
   // ================================================================
-  // CONFIGURATION — edit these values as needed
+  // CONFIGURATION — do not change these
   // ================================================================
-
-  // Your Google Apps Script URL — do not change this
-  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzhWHcJwluWSpCcH3chmM36tVNlYnHwDPDY1eh2uwBSz3FfSYziIg6GUtzgB5Wdm34G/exec";
-
-  // Link shown when a carrier is not found — change to your form/email
+  const SCRIPT_URL      = "https://script.google.com/macros/s/AKfycbzhWHcJwluWSpCcH3chmM36tVNlYnHwDPDY1eh2uwBSz3FfSYziIg6GUtzgB5Wdm34G/exec";
   const NEW_CARRIER_URL = "https://forms.office.com/e/YMprcp7VK0";
+  const CODE_FORM_URL   = "https://forms.office.com/e/WRBMMKnW4v";
+  const CONTACT_EMAIL   = "scsecurity@ferrero.com";
 
   // ================================================================
-  // STATUS DEFINITIONS
-  // These three match exactly what is written in your Google Sheet.
-  // Comparison is case-insensitive so "Approved" = "approved".
-  // To edit a message, change the text inside the msg: "..." string.
-  // Do not change the keys (approved / suspended / pending documentation)
-  // unless you also change them in your Google Sheet.
+  // STATUS DEFINITIONS — labels always in English for log consistency
+  // Messages are translated per language in the TRANSLATIONS section
   // ================================================================
-  const STATUS = {
 
-    "approved": {
-      cls:   "s-approved",
-      label: "Approved",
-      msg:   "This carrier is <strong>approved</strong> and authorised to transport our products. No further action is required. Ensure the driver provides correct documentation in name of this company upon arriving for loading."
+  // ================================================================
+  // TRANSLATIONS
+  // Status labels stay in English. Only interface text is translated.
+  // To edit, find the language block and change the text values.
+  // ================================================================
+  const TRANSLATIONS = {
+
+    // ── ENGLISH ─────────────────────────────────────────────────
+    en: {
+      title:           "Carrier VAT Checker",
+      subtitle:        "Verify the approval status of a carrier by VAT number.",
+      warning1:        "PLEASE DO NOT SHARE THIS TOOL OUTSIDE YOUR ORGANISATION.",
+      warning2:        "Only Ferrero approved users are allowed to use this tool.",
+      step1label:      "Step 1 — Enter your access code",
+      codePlaceholder: "e.g. SUPP-001",
+      verifyBtn:       "Verify",
+      verifiedBtn:     "✓ Verified",
+      codeHint:        `If you don't have an access code, you need to request one by filling out this online <a href="${CODE_FORM_URL}">request form</a>.`,
+      step2label:      "Step 2 — Enter carrier VAT number",
+      vatPlaceholder:  "e.g. DE123456789",
+      checkBtn:        "Check",
+      vatHint:         "Include the country code prefix (e.g. DE, NL, FR, GB, IT). Make sure there are NO SPACES, only country code and the numbers (e.g. DE1234567).",
+      codeAccepted:    "Code accepted!",
+      codeError:       `Invalid access code. Please check and try again, or fill out this <a href="${CODE_FORM_URL}" style="color:#b71c1c;">online form</a> to request a code.`,
+      connError:       "Connection error. Please try again in a moment.",
+      verifying:       "Verifying your code...",
+      lookingUp:       "Looking up VAT number...",
+      lookupFailed:    "Lookup failed. Please try again.",
+      newSearch:       "Search another VAT number",
+      notRegistered:   "Carrier not registered",
+      registerLink:    "Request carrier registration",
+      footer:          `For carrier registration enquiries contact <a href="mailto:${CONTACT_EMAIL}">${CONTACT_EMAIL}</a><br>All consultations are logged for audit purposes.`,
+      statuses: {
+        approved:                { msg: "This carrier is <strong>approved</strong> and authorised to transport our products. No further action is required. Ensure the driver provides correct documentation in name of this company upon arriving for loading." },
+        suspended:               { msg: "This carrier is currently <strong>suspended</strong> and <strong>NOT AUTHORISED</strong> to transport our products." },
+        "pending documentation": { msg: "This carrier process is awaiting <strong>required documentation</strong> before approval can be granted. Carrier will be removed and process will be cancelled if required valid documents are not sent within 5 business days." },
+        "not-found":             { msg: "This VAT number is <strong>not registered</strong> in our carrier list. Please use the link below if you would like to request registration for this company." },
+        error:                   { msg: "There is an error with this carrier's record. Please contact Ferrero Security team for more information." }
+      }
     },
 
-    "suspended": {
-      cls:   "s-suspended",
-      label: "Suspended",
-      msg:   "This carrier is currenlty <strong>suspended</strong> and <strong>NOT AUTHORISED</strong> to transport our products."
+    // ── ITALIAN ─────────────────────────────────────────────────
+    // ⚠ Please have a native Italian speaker review these translations before going live
+    it: {
+      title:           "Verifica VAT Vettori",
+      subtitle:        "Verifica lo stato di approvazione di un vettore tramite numero VAT.",
+      warning1:        "NON CONDIVIDERE QUESTO STRUMENTO AL DI FUORI DELLA TUA ORGANIZZAZIONE.",
+      warning2:        "Solo gli utenti approvati da Ferrero possono utilizzare questo strumento.",
+      step1label:      "Passo 1 — Inserisci il tuo codice di accesso",
+      codePlaceholder: "es. SUPP-001",
+      verifyBtn:       "Verifica",
+      verifiedBtn:     "✓ Verificato",
+      codeHint:        `Se non hai un codice di accesso, richiedilo compilando questo <a href="${CODE_FORM_URL}">modulo online</a>.`,
+      step2label:      "Passo 2 — Inserisci il numero VAT del vettore",
+      vatPlaceholder:  "es. IT12345678901",
+      checkBtn:        "Controlla",
+      vatHint:         "Includi il prefisso del codice paese (es. IT, DE, FR, GB, NL). Assicurati che NON CI SIANO SPAZI, solo il codice paese e i numeri (es. IT12345678901).",
+      codeAccepted:    "Codice accettato!",
+      codeError:       `Codice di accesso non valido. Controlla e riprova, oppure compila questo <a href="${CODE_FORM_URL}" style="color:#b71c1c;">modulo online</a> per richiederne uno.`,
+      connError:       "Errore di connessione. Riprova tra un momento.",
+      verifying:       "Verifica del codice in corso...",
+      lookingUp:       "Ricerca del numero VAT in corso...",
+      lookupFailed:    "Ricerca non riuscita. Riprova.",
+      newSearch:       "Cerca un altro numero VAT",
+      notRegistered:   "Vettore non registrato",
+      registerLink:    "Richiedi registrazione vettore",
+      footer:          `Per informazioni sulla registrazione dei vettori contatta <a href="mailto:${CONTACT_EMAIL}">${CONTACT_EMAIL}</a><br>Tutte le consultazioni vengono registrate a fini di audit.`,
+      statuses: {
+        approved:                { msg: "Questo vettore è <strong>approvato</strong> e autorizzato al trasporto dei nostri prodotti. Nessuna ulteriore azione richiesta. Assicurarsi che l'autista fornisca la documentazione corretta intestata a questa società al momento dell'arrivo per il carico." },
+        suspended:               { msg: "Questo vettore è attualmente <strong>sospeso</strong> e <strong>NON AUTORIZZATO</strong> al trasporto dei nostri prodotti." },
+        "pending documentation": { msg: "Il processo per questo vettore è in attesa della <strong>documentazione richiesta</strong> prima che l'approvazione possa essere concessa. Il vettore sarà rimosso e il processo annullato se i documenti validi richiesti non vengono inviati entro 5 giorni lavorativi." },
+        "not-found":             { msg: "Questo numero VAT <strong>non è registrato</strong> nel nostro elenco vettori. Utilizza il link sottostante per richiedere la registrazione di questa società." },
+        error:                   { msg: "Si è verificato un errore con il record di questo vettore. Contatta il team di sicurezza Ferrero per ulteriori informazioni." }
+      }
     },
 
-    "pending documentation": {
-      cls:   "s-pending-documentation",
-      label: "Not Approved - Pending",
-      msg:   "This carrier process is awaiting <strong>required documentation</strong> before approval can be granted. Carrier will be removed and process will be cancelled if required valid documents are not sent within 5 business days."
+    // ── GERMAN ──────────────────────────────────────────────────
+    // ⚠ Please have a native German speaker review these translations before going live
+    de: {
+      title:           "Spediteur USt-IdNr.-Prüfer",
+      subtitle:        "Genehmigungsstatus eines Spediteurs anhand der USt-IdNr. prüfen.",
+      warning1:        "BITTE DIESES TOOL NICHT AUSSERHALB IHRER ORGANISATION WEITERGEBEN.",
+      warning2:        "Nur von Ferrero genehmigte Nutzer dürfen dieses Tool verwenden.",
+      step1label:      "Schritt 1 — Zugangscode eingeben",
+      codePlaceholder: "z.B. SUPP-001",
+      verifyBtn:       "Prüfen",
+      verifiedBtn:     "✓ Bestätigt",
+      codeHint:        `Falls Sie keinen Zugangscode haben, fordern Sie einen über dieses <a href="${CODE_FORM_URL}">Online-Formular</a> an.`,
+      step2label:      "Schritt 2 — USt-IdNr. des Spediteurs eingeben",
+      vatPlaceholder:  "z.B. DE123456789",
+      checkBtn:        "Prüfen",
+      vatHint:         "Länderkennzeichen voranstellen (z.B. DE, IT, FR, GB, NL). Keine LEERZEICHEN — nur Länderkennzeichen und Ziffern (z.B. DE123456789).",
+      codeAccepted:    "Code akzeptiert!",
+      codeError:       `Ungültiger Zugangscode. Bitte prüfen und erneut versuchen oder dieses <a href="${CODE_FORM_URL}" style="color:#b71c1c;">Online-Formular</a> ausfüllen, um einen Code anzufordern.`,
+      connError:       "Verbindungsfehler. Bitte in einem Moment erneut versuchen.",
+      verifying:       "Code wird geprüft...",
+      lookingUp:       "USt-IdNr. wird gesucht...",
+      lookupFailed:    "Suche fehlgeschlagen. Bitte erneut versuchen.",
+      newSearch:       "Weitere USt-IdNr. suchen",
+      notRegistered:   "Spediteur nicht registriert",
+      registerLink:    "Spediteur-Registrierung beantragen",
+      footer:          `Für Spediteur-Registrierungsanfragen wenden Sie sich an <a href="mailto:${CONTACT_EMAIL}">${CONTACT_EMAIL}</a><br>Alle Anfragen werden zu Prüfzwecken protokolliert.`,
+      statuses: {
+        approved:                { msg: "Dieser Spediteur ist <strong>genehmigt</strong> und berechtigt, unsere Produkte zu transportieren. Kein weiterer Handlungsbedarf. Stellen Sie sicher, dass der Fahrer beim Eintreffen zur Beladung korrekte Unterlagen im Namen dieses Unternehmens vorlegt." },
+        suspended:               { msg: "Dieser Spediteur ist derzeit <strong>gesperrt</strong> und <strong>NICHT BERECHTIGT</strong>, unsere Produkte zu transportieren." },
+        "pending documentation": { msg: "Das Verfahren für diesen Spediteur wartet auf <strong>erforderliche Unterlagen</strong>, bevor eine Genehmigung erteilt werden kann. Der Spediteur wird entfernt und das Verfahren storniert, wenn die erforderlichen Dokumente nicht innerhalb von 5 Werktagen eingereicht werden." },
+        "not-found":             { msg: "Diese USt-IdNr. ist <strong>nicht registriert</strong> in unserer Spediteurliste. Bitte den unten stehenden Link nutzen, um die Registrierung dieses Unternehmens zu beantragen." },
+        error:                   { msg: "Bei dem Datensatz dieses Spediteurs liegt ein Fehler vor. Bitte das Ferrero-Sicherheitsteam kontaktieren." }
+      }
+    },
+
+    // ── FRENCH ──────────────────────────────────────────────────
+    // ⚠ Please have a native French speaker review these translations before going live
+    fr: {
+      title:           "Vérificateur TVA Transporteurs",
+      subtitle:        "Vérifiez le statut d'approbation d'un transporteur par numéro de TVA.",
+      warning1:        "NE PAS PARTAGER CET OUTIL EN DEHORS DE VOTRE ORGANISATION.",
+      warning2:        "Seuls les utilisateurs approuvés par Ferrero sont autorisés à utiliser cet outil.",
+      step1label:      "Étape 1 — Entrez votre code d'accès",
+      codePlaceholder: "ex. SUPP-001",
+      verifyBtn:       "Vérifier",
+      verifiedBtn:     "✓ Vérifié",
+      codeHint:        `Si vous n'avez pas de code d'accès, vous pouvez en demander un en remplissant ce <a href="${CODE_FORM_URL}">formulaire en ligne</a>.`,
+      step2label:      "Étape 2 — Entrez le numéro de TVA du transporteur",
+      vatPlaceholder:  "ex. FR12345678901",
+      checkBtn:        "Vérifier",
+      vatHint:         "Incluez le préfixe du code pays (ex. FR, IT, DE, GB, NL). Assurez-vous qu'il n'y a PAS D'ESPACES — uniquement le code pays et les chiffres (ex. FR12345678901).",
+      codeAccepted:    "Code accepté !",
+      codeError:       `Code d'accès invalide. Vérifiez et réessayez, ou remplissez ce <a href="${CODE_FORM_URL}" style="color:#b71c1c;">formulaire en ligne</a> pour en demander un.`,
+      connError:       "Erreur de connexion. Veuillez réessayer dans un moment.",
+      verifying:       "Vérification du code en cours...",
+      lookingUp:       "Recherche du numéro de TVA en cours...",
+      lookupFailed:    "Recherche échouée. Veuillez réessayer.",
+      newSearch:       "Rechercher un autre numéro de TVA",
+      notRegistered:   "Transporteur non enregistré",
+      registerLink:    "Demander l'enregistrement d'un transporteur",
+      footer:          `Pour les demandes d'enregistrement de transporteurs, contactez <a href="mailto:${CONTACT_EMAIL}">${CONTACT_EMAIL}</a><br>Toutes les consultations sont enregistrées à des fins d'audit.`,
+      statuses: {
+        approved:                { msg: "Ce transporteur est <strong>approuvé</strong> et autorisé à transporter nos produits. Aucune action supplémentaire n'est requise. Assurez-vous que le chauffeur fournit les documents corrects au nom de cette société à son arrivée pour le chargement." },
+        suspended:               { msg: "Ce transporteur est actuellement <strong>suspendu</strong> et <strong>NON AUTORISÉ</strong> à transporter nos produits." },
+        "pending documentation": { msg: "Le processus pour ce transporteur est en attente de la <strong>documentation requise</strong> avant que l'approbation puisse être accordée. Le transporteur sera supprimé et le processus annulé si les documents valides requis ne sont pas envoyés dans un délai de 5 jours ouvrables." },
+        "not-found":             { msg: "Ce numéro de TVA <strong>n'est pas enregistré</strong> dans notre liste de transporteurs. Veuillez utiliser le lien ci-dessous pour demander l'enregistrement de cette société." },
+        error:                   { msg: "Il y a une erreur dans le dossier de ce transporteur. Veuillez contacter l'équipe de sécurité Ferrero pour plus d'informations." }
+      }
+    },
+
+    // ── POLISH ──────────────────────────────────────────────────
+    // ⚠ Please have a native Polish speaker review these translations before going live
+    pl: {
+      title:           "Weryfikator NIP Przewoźników",
+      subtitle:        "Sprawdź status zatwierdzenia przewoźnika na podstawie numeru NIP/VAT.",
+      warning1:        "NIE UDOSTĘPNIAJ TEGO NARZĘDZIA POZA SWOJĄ ORGANIZACJĄ.",
+      warning2:        "Tylko użytkownicy zatwierdzeni przez Ferrero mogą korzystać z tego narzędzia.",
+      step1label:      "Krok 1 — Wprowadź kod dostępu",
+      codePlaceholder: "np. SUPP-001",
+      verifyBtn:       "Weryfikuj",
+      verifiedBtn:     "✓ Zweryfikowano",
+      codeHint:        `Jeśli nie masz kodu dostępu, możesz go otrzymać wypełniając ten <a href="${CODE_FORM_URL}">formularz online</a>.`,
+      step2label:      "Krok 2 — Wprowadź numer NIP/VAT przewoźnika",
+      vatPlaceholder:  "np. PL1234567890",
+      checkBtn:        "Sprawdź",
+      vatHint:         "Uwzględnij prefiks kodu kraju (np. PL, IT, DE, FR, GB). Upewnij się, że NIE MA SPACJI — tylko kod kraju i cyfry (np. PL1234567890).",
+      codeAccepted:    "Kod zaakceptowany!",
+      codeError:       `Nieprawidłowy kod dostępu. Sprawdź i spróbuj ponownie lub wypełnij ten <a href="${CODE_FORM_URL}" style="color:#b71c1c;">formularz online</a>, aby go otrzymać.`,
+      connError:       "Błąd połączenia. Spróbuj ponownie za chwilę.",
+      verifying:       "Weryfikacja kodu...",
+      lookingUp:       "Wyszukiwanie numeru NIP/VAT...",
+      lookupFailed:    "Wyszukiwanie nie powiodło się. Spróbuj ponownie.",
+      newSearch:       "Sprawdź inny numer NIP/VAT",
+      notRegistered:   "Przewoźnik niezarejestrowany",
+      registerLink:    "Złóż wniosek o rejestrację przewoźnika",
+      footer:          `W sprawie rejestracji przewoźników skontaktuj się z <a href="mailto:${CONTACT_EMAIL}">${CONTACT_EMAIL}</a><br>Wszystkie konsultacje są rejestrowane do celów audytu.`,
+      statuses: {
+        approved:                { msg: "Ten przewoźnik jest <strong>zatwierdzony</strong> i upoważniony do transportu naszych produktów. Nie są wymagane żadne dalsze działania. Upewnij się, że kierowca przedstawia prawidłową dokumentację na nazwę tej firmy przy przyjeździe do załadunku." },
+        suspended:               { msg: "Ten przewoźnik jest obecnie <strong>zawieszony</strong> i <strong>NIE JEST UPOWAŻNIONY</strong> do transportu naszych produktów." },
+        "pending documentation": { msg: "Proces dla tego przewoźnika oczekuje na <strong>wymaganą dokumentację</strong> przed udzieleniem zgody. Przewoźnik zostanie usunięty, a proces anulowany, jeśli wymagane ważne dokumenty nie zostaną przesłane w ciągu 5 dni roboczych." },
+        "not-found":             { msg: "Ten numer NIP/VAT <strong>nie jest zarejestrowany</strong> na naszej liście przewoźników. Użyj poniższego linku, aby złożyć wniosek o rejestrację tej firmy." },
+        error:                   { msg: "Wystąpił błąd w rekordzie tego przewoźnika. Skontaktuj się z zespołem bezpieczeństwa Ferrero, aby uzyskać więcej informacji." }
+      }
     }
 
   };
 
   // ================================================================
-  // NOT FOUND — shown automatically when VAT is not in the list at all
-  // This is not a status in your sheet — it is triggered automatically
+  // STATUS LABELS — always in English for log consistency
   // ================================================================
-  const NOT_FOUND = {
-    cls:   "s-not-found",
-    label: "Not found",
-    msg:   "This VAT number is <strong>not registered</strong> in our carrier list. Please use the link below if you would like to request registration for this company."
+  const STATUS_LABELS = {
+    approved:                "Approved",
+    suspended:               "Suspended",
+    "pending documentation": "Not Approved - Pending",
+    "not-found":             "Not found",
+    error:                   "ERROR"
   };
 
   // ================================================================
   // TOOL LOGIC — no need to edit below this line
   // ================================================================
-
   let validatedCode = null;
+  let currentLang   = 'en';
 
-  function normalise(str) {
-    return (str || "").trim().toLowerCase();
+  function tx() { return TRANSLATIONS[currentLang]; }
+
+  function setLang(lang) {
+    currentLang = lang;
+    localStorage.setItem('vatCheckerLang', lang);
+
+    document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('lang-' + lang).classList.add('active');
+
+    const t = tx();
+    document.getElementById('ui-title').textContent      = t.title;
+    document.getElementById('ui-subtitle').textContent   = t.subtitle;
+    document.getElementById('ui-warning1').textContent   = t.warning1;
+    document.getElementById('ui-warning2').textContent   = t.warning2;
+    document.getElementById('ui-step1label').textContent = t.step1label;
+    document.getElementById('codeInput').placeholder     = t.codePlaceholder;
+    document.getElementById('ui-codehint').innerHTML     = t.codeHint;
+    document.getElementById('ui-step2label').textContent = t.step2label;
+    document.getElementById('vatInput').placeholder      = t.vatPlaceholder;
+    document.getElementById('ui-vathint').textContent    = t.vatHint;
+    document.getElementById('ui-newsearch').textContent  = t.newSearch;
+    document.getElementById('ui-footer').innerHTML       = t.footer;
+
+    document.getElementById('codeBtn').textContent = validatedCode ? t.verifiedBtn : t.verifyBtn;
+    document.getElementById('vatBtn').textContent  = t.checkBtn;
   }
 
-  function getStatus(rawStatus, carrierFound) {
-    if (!carrierFound) return NOT_FOUND;
-    const key = normalise(rawStatus);
-    for (const [k, v] of Object.entries(STATUS)) {
-      if (normalise(k) === key) return v;
+  function normalise(str) { return (str || "").trim().toLowerCase(); }
+
+  function getStatusConfig(rawStatus, carrierFound) {
+    const t = tx();
+    if (!carrierFound) {
+      return { cls: "s-not-found", label: STATUS_LABELS["not-found"], msg: t.statuses["not-found"].msg };
     }
-    // Status value in sheet doesn't match any known status
-    return {
-      cls:   "s-error",
-      label: "ERROR",
-      msg:   "There is an error with this carrier's record. Please contact Ferrero Security team for more information."
-    };
+    const key = normalise(rawStatus);
+    for (const [k, v] of Object.entries(t.statuses)) {
+      if (k !== "not-found" && k !== "error" && normalise(k) === key) {
+        const cssKey = k === "pending documentation" ? "pending-documentation" : k;
+        return { cls: "s-" + cssKey, label: STATUS_LABELS[k] || rawStatus, msg: v.msg };
+      }
+    }
+    return { cls: "s-error", label: STATUS_LABELS["error"], msg: t.statuses["error"].msg };
   }
 
   async function validateCode() {
@@ -368,24 +581,24 @@
     const btn = document.getElementById('codeBtn');
     const fb  = document.getElementById('codeFeedback');
     btn.disabled = true;
-    showFb(fb, 'loading', '<span class="spinner"></span>Verifying your code...');
+    showFb(fb, 'loading', `<span class="spinner"></span>${tx().verifying}`);
     try {
       const res  = await fetch(`${SCRIPT_URL}?action=validateCode&code=${encodeURIComponent(code)}`);
       const data = await res.json();
       if (data.success) {
         validatedCode = code;
-        showFb(fb, 'success', `Code accepted!`);
+        showFb(fb, 'success', tx().codeAccepted);
         document.getElementById('codeInput').disabled = true;
         btn.disabled    = true;
-        btn.textContent = '✓ Verified';
+        btn.textContent = tx().verifiedBtn;
         document.getElementById('vatSection').classList.add('visible');
         document.getElementById('vatInput').focus();
       } else {
-        showFb(fb, 'error', 'Invalid access code. Please check and try again, or fill out this <a href="https://forms.office.com/e/WRBMMKnW4v" style="color:#b71c1c;">online form</a> to request a code.');
+        showFb(fb, 'error', tx().codeError);
         btn.disabled = false;
       }
     } catch (e) {
-      showFb(fb, 'error', 'Connection error. Please try again in a moment.');
+      showFb(fb, 'error', tx().connError);
       btn.disabled = false;
     }
   }
@@ -397,7 +610,7 @@
     const fb  = document.getElementById('vatFeedback');
     btn.disabled = true;
     document.getElementById('resultCard').classList.remove('visible');
-    showFb(fb, 'loading', '<span class="spinner"></span>Looking up VAT number...');
+    showFb(fb, 'loading', `<span class="spinner"></span>${tx().lookingUp}`);
     try {
       const res  = await fetch(`${SCRIPT_URL}?action=lookupVAT&vat=${encodeURIComponent(vat)}&code=${encodeURIComponent(validatedCode)}`);
       const data = await res.json();
@@ -405,27 +618,25 @@
         hideFb(fb);
         showResult(vat, data.carrierName, data.status);
       } else {
-        showFb(fb, 'error', 'Lookup failed. Please try again.');
+        showFb(fb, 'error', tx().lookupFailed);
       }
     } catch (e) {
-      showFb(fb, 'error', 'Connection error. Please try again in a moment.');
+      showFb(fb, 'error', tx().connError);
     }
     btn.disabled = false;
   }
 
   function showResult(vat, carrierName, rawStatus) {
     const carrierFound = !!carrierName;
-    const cfg = getStatus(rawStatus, carrierFound);
-    const showRegLink = !carrierFound;
-
-    document.getElementById('rName').textContent    = carrierFound ? carrierName : "Carrier not registered";
-    document.getElementById('rVat').textContent     = vat.toUpperCase();
+    const cfg          = getStatusConfig(rawStatus, carrierFound);
+    document.getElementById('rName').textContent     = carrierFound ? carrierName : tx().notRegistered;
+    document.getElementById('rVat').textContent      = vat.toUpperCase();
     const pill = document.getElementById('rPill');
     pill.className = 'pill ' + cfg.cls;
     document.getElementById('rPillText').textContent = cfg.label;
     document.getElementById('rMsg').innerHTML        = cfg.msg;
-    document.getElementById('rAction').innerHTML     = showRegLink
-      ? `<a class="action-link" href="${NEW_CARRIER_URL}">Request carrier registration</a>` : '';
+    document.getElementById('rAction').innerHTML     = !carrierFound
+      ? `<a class="action-link" href="${NEW_CARRIER_URL}">${tx().registerLink}</a>` : '';
     document.getElementById('resultCard').classList.add('visible');
   }
 
@@ -443,6 +654,10 @@
     if (e.key !== 'Enter') return;
     if (!validatedCode) validateCode(); else lookupVAT();
   });
+
+  // Initialise — restore saved language or default to English
+  const savedLang = localStorage.getItem('vatCheckerLang');
+  setLang(savedLang && TRANSLATIONS[savedLang] ? savedLang : 'en');
 </script>
 </body>
 </html>
