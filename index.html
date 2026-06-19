@@ -353,9 +353,7 @@
     </div>
   </div>
 
- <div class="refresh-tip">
-    💡 Please refresh this page from time to time to make sure you're using the most up-to-date version of the tool.
-  </div>
+ <div class="refresh-tip" id="ui-refreshtip"></div>
  
   <div class="footer" id="ui-footer"></div>
 
@@ -404,6 +402,7 @@
       lookupFailed:    "Lookup failed. Please try again.",
       newSearch:       "Search another VAT number",
       notRegistered:   "Carrier not registered",
+      refreshTip: "💡 Please refresh this page from time to time to make sure you're using the most up-to-date version of the tool.",
       registerLink:    "Request carrier registration",
       footer:          `For carrier registration enquiries contact <a href="mailto:${CONTACT_EMAIL}">${CONTACT_EMAIL}</a><br>All consultations are logged for audit purposes.`,
       statuses: {
@@ -439,6 +438,7 @@
       lookupFailed:    "Ricerca non riuscita. Riprova.",
       newSearch:       "Cerca un altro numero VAT",
       notRegistered:   "Vettore non registrato",
+     refreshTip: "💡 Aggiorna periodicamente questa pagina per assicurarti di utilizzare la versione più recente dello strumento.",
       registerLink:    "Richiedi registrazione vettore",
       footer:          `Per informazioni sulla registrazione dei vettori contatta <a href="mailto:${CONTACT_EMAIL}">${CONTACT_EMAIL}</a><br>Tutte le consultazioni vengono registrate a fini di audit.`,
       statuses: {
@@ -474,6 +474,7 @@
       lookupFailed:    "Suche fehlgeschlagen. Bitte erneut versuchen.",
       newSearch:       "Weitere USt-IdNr. suchen",
       notRegistered:   "Spediteur nicht registriert",
+     refreshTip: "💡 Bitte aktualisieren Sie diese Seite von Zeit zu Zeit, um sicherzustellen, dass Sie die neueste Version des Tools verwenden.",
       registerLink:    "Spediteur-Registrierung beantragen",
       footer:          `Für Spediteur-Registrierungsanfragen wenden Sie sich an <a href="mailto:${CONTACT_EMAIL}">${CONTACT_EMAIL}</a><br>Alle Anfragen werden zu Prüfzwecken protokolliert.`,
       statuses: {
@@ -509,6 +510,7 @@
       lookupFailed:    "Recherche échouée. Veuillez réessayer.",
       newSearch:       "Rechercher un autre numéro de TVA",
       notRegistered:   "Transporteur non enregistré",
+     refrechTip: "💡 Veuillez actualiser cette page de temps en temps pour vous assurer d'utiliser la version la plus récente de l'outil.",
       registerLink:    "Demander l'enregistrement d'un transporteur",
       footer:          `Pour les demandes d'enregistrement de transporteurs, contactez <a href="mailto:${CONTACT_EMAIL}">${CONTACT_EMAIL}</a><br>Toutes les consultations sont enregistrées à des fins d'audit.`,
       statuses: {
@@ -544,6 +546,7 @@
       lookupFailed:    "Wyszukiwanie nie powiodło się. Spróbuj ponownie.",
       newSearch:       "Sprawdź inny numer NIP/VAT",
       notRegistered:   "Przewoźnik niezarejestrowany",
+     refreshTip: "💡 Odświeżaj tę stronę od czasu do czasu, aby mieć pewność, że korzystasz z najnowszej wersji narzędzia.",
       registerLink:    "Złóż wniosek o rejestrację przewoźnika",
       footer:          `W sprawie rejestracji przewoźników skontaktuj się z <a href="mailto:${CONTACT_EMAIL}">${CONTACT_EMAIL}</a><br>Wszystkie konsultacje są rejestrowane do celów audytu.`,
       statuses: {
@@ -596,6 +599,7 @@
     document.getElementById('ui-vathint').textContent    = t.vatHint;
     document.getElementById('ui-newsearch').textContent  = t.newSearch;
     document.getElementById('ui-footer').innerHTML       = t.footer;
+   document.getElementById('ui-refreshtip').textContent = t.refreshTip;
 
     document.getElementById('codeBtn').textContent = validatedCode ? t.verifiedBtn : t.verifyBtn;
     document.getElementById('vatBtn').textContent  = t.checkBtn;
