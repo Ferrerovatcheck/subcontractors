@@ -391,6 +391,7 @@
       codeAccepted:    "Code accepted!",
       codeError:       `Invalid access code. Please check and try again, or fill out this <a href="${CODE_FORM_URL}" style="color:#b71c1c;">online form</a> to request a code.`,
       connError:       "Connection error. Please try again in a moment.",
+      codeDeactivated: `This access code has been deactivated. Please contact <a href="mailto:${CONTACT_EMAIL}" style="color:#b71c1c;">${CONTACT_EMAIL}</a> to reactivate it.<br><br>⚠️ Please note that access codes which have not been used for 60 consecutive days are automatically deactivated for security purposes.`,
       verifying:       "Verifying your code...",
       lookingUp:       "Looking up VAT number...",
       lookupFailed:    "Lookup failed. Please try again.",
@@ -427,6 +428,7 @@
       codeAccepted:    "Codice accettato!",
       codeError:       `Codice di accesso non valido. Controlla e riprova, oppure compila questo <a href="${CODE_FORM_URL}" style="color:#b71c1c;">modulo online</a> per richiederne uno.`,
       connError:       "Errore di connessione. Riprova tra un momento.",
+      codeDeactivated: `Questo codice di accesso è stato disattivato. Contatta <a href="mailto:${CONTACT_EMAIL}" style="color:#b71c1c;">${CONTACT_EMAIL}</a> per riattivarlo.<br><br>⚠️ I codici di accesso non utilizzati per 60 giorni consecutivi vengono automaticamente disattivati per motivi di sicurezza.`,
       verifying:       "Verifica del codice in corso...",
       lookingUp:       "Ricerca del numero VAT in corso...",
       lookupFailed:    "Ricerca non riuscita. Riprova.",
@@ -463,6 +465,7 @@
       codeAccepted:    "Code akzeptiert!",
       codeError:       `Ungültiger Zugangscode. Bitte prüfen und erneut versuchen oder dieses <a href="${CODE_FORM_URL}" style="color:#b71c1c;">Online-Formular</a> ausfüllen, um einen Code anzufordern.`,
       connError:       "Verbindungsfehler. Bitte in einem Moment erneut versuchen.",
+      codeDeactivated: `Dieser Zugangscode wurde deaktiviert. Bitte wenden Sie sich an <a href="mailto:${CONTACT_EMAIL}" style="color:#b71c1c;">${CONTACT_EMAIL}</a>, um ihn zu reaktivieren.<br><br>⚠️ Bitte beachten Sie, dass Zugangscodes, die 60 aufeinanderfolgende Tage lang nicht verwendet wurden, aus Sicherheitsgründen automatisch deaktiviert werden.`,
       verifying:       "Code wird geprüft...",
       lookingUp:       "USt-IdNr. wird gesucht...",
       lookupFailed:    "Suche fehlgeschlagen. Bitte erneut versuchen.",
@@ -499,6 +502,7 @@
       codeAccepted:    "Code accepté !",
       codeError:       `Code d'accès invalide. Vérifiez et réessayez, ou remplissez ce <a href="${CODE_FORM_URL}" style="color:#b71c1c;">formulaire en ligne</a> pour en demander un.`,
       connError:       "Erreur de connexion. Veuillez réessayer dans un moment.",
+      codeDeactivated: `Ce code d'accès a été désactivé. Veuillez contacter <a href="mailto:${CONTACT_EMAIL}" style="color:#b71c1c;">${CONTACT_EMAIL}</a> pour le réactiver.<br><br>⚠️ Veuillez noter que les codes d'accès qui n'ont pas été utilisés pendant 60 jours consécutifs sont automatiquement désactivés pour des raisons de sécurité.`,
       verifying:       "Vérification du code en cours...",
       lookingUp:       "Recherche du numéro de TVA en cours...",
       lookupFailed:    "Recherche échouée. Veuillez réessayer.",
@@ -535,6 +539,7 @@
       codeAccepted:    "Kod zaakceptowany!",
       codeError:       `Nieprawidłowy kod dostępu. Sprawdź i spróbuj ponownie lub wypełnij ten <a href="${CODE_FORM_URL}" style="color:#b71c1c;">formularz online</a>, aby go otrzymać.`,
       connError:       "Błąd połączenia. Spróbuj ponownie za chwilę.",
+      codeDeactivated: `Ten kod dostępu został dezaktywowany. Skontaktuj się z <a href="mailto:${CONTACT_EMAIL}" style="color:#b71c1c;">${CONTACT_EMAIL}</a>, aby go reaktywować.<br><br>⚠️ Należy pamiętać, że kody dostępu, które nie były używane przez 60 kolejnych dni, są automatycznie dezaktywowane ze względów bezpieczeństwa.`,
       verifying:       "Weryfikacja kodu...",
       lookingUp:       "Wyszukiwanie numeru NIP/VAT...",
       lookupFailed:    "Wyszukiwanie nie powiodło się. Spróbuj ponownie.",
@@ -627,17 +632,20 @@
       const res  = await fetch(`${SCRIPT_URL}?action=validateCode&code=${encodeURIComponent(code)}`);
       const data = await res.json();
       if (data.success) {
-        validatedCode = code;
-        showFb(fb, 'success', tx().codeAccepted);
-        document.getElementById('codeInput').disabled = true;
-        btn.disabled    = true;
-        btn.textContent = tx().verifiedBtn;
-        document.getElementById('vatSection').classList.add('visible');
-        document.getElementById('vatInput').focus();
-      } else {
-        showFb(fb, 'error', tx().codeError);
-        btn.disabled = false;
-      }
+  validatedCode = code;
+  showFb(fb, 'success', tx().codeAccepted);
+  document.getElementById('codeInput').disabled = true;
+  btn.disabled    = true;
+  btn.textContent = tx().verifiedBtn;
+  document.getElementById('vatSection').classList.add('visible');
+  document.getElementById('vatInput').focus();
+} else if (data.deactivated) {
+  showFb(fb, 'error', tx().codeDeactivated);
+  btn.disabled = false;
+} else {
+  showFb(fb, 'error', tx().codeError);
+  btn.disabled = false;
+}
     } catch (e) {
       showFb(fb, 'error', tx().connError);
       btn.disabled = false;
