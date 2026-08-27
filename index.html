@@ -394,7 +394,7 @@
       step2label:      "Step 2 — Enter carrier VAT number",
       vatPlaceholder:  "e.g. DE123456789",
       checkBtn:        "Check",
-      vatHint:         "Include the country code prefix (e.g. DE, NL, FR, GB, IT). Make sure there are NO SPACES, only country code and the numbers (e.g. DE1234567).",
+      vatHint:         "Include the <strong>country code</strong> prefix (e.g. DE, NL, FR, GB, IT). Make sure there are <strong>NO SPACES</strong>, only country code and the numbers (e.g. <strong>DE1234567</strong>).",
       codeAccepted:    "Code accepted!",
       codeError:       `Invalid access code. Please check and try again, or fill out this <a href="${CODE_FORM_URL}" style="color:#b71c1c;">online form</a> to request a code.`,
       connError:       "Connection error. Please try again in a moment.",
@@ -612,7 +612,7 @@
     document.getElementById('ui-codehint').innerHTML     = t.codeHint;
     document.getElementById('ui-step2label').textContent = t.step2label;
     document.getElementById('vatInput').placeholder      = t.vatPlaceholder;
-    document.getElementById('ui-vathint').textContent    = t.vatHint;
+    document.getElementById('ui-vathint').innerHTML      = t.vatHint;
     document.getElementById('ui-newsearch').textContent  = t.newSearch;
     document.getElementById('ui-footer').innerHTML       = t.footer;
    document.getElementById('ui-refreshtip').textContent = t.refreshTip;
